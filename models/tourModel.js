@@ -9,42 +9,42 @@ const tourSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       maxlength: [35, "A tour must have less or equal than 35 characters!"],
-      minlenght: [3, "A tour must have more or equal than 3 characters!"],
+      minlenght: [3, "A tour must have more or equal than 3 characters!"]
     },
     slug: String,
     rating: {
       type: Number,
-      default: 4.5,
+      default: 4.5
     },
     duration: {
       type: Number,
-      required: [true, "A tour must have a duration!"],
+      required: [true, "A tour must have a duration!"]
     },
     maxGroupSize: {
       type: Number,
-      required: [true, "A tour must have a group size!"],
+      required: [true, "A tour must have a group size!"]
     },
     difficulty: {
       type: String,
       required: [true, "A tour must have a difficulty level!"],
       enum: {
         values: ["easy", "medium", "difficult"],
-        message: "Difficulty is either: easy, medium, difficult",
-      },
+        message: "Difficulty is either: easy, medium, difficult"
+      }
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
       min: [1, "Rating must be above or equal to 1"],
-      max: [5, "Rating must be below or equal to 5"],
+      max: [5, "Rating must be below or equal to 5"]
     },
     retingsQuantity: {
       type: Number,
-      default: 0,
+      default: 0
     },
     price: {
       type: Number,
-      required: [true, "A tour must have a price!"],
+      required: [true, "A tour must have a price!"]
     },
     discount: {
       type: Number,
@@ -53,32 +53,32 @@ const tourSchema = new mongoose.Schema(
           // this only point to current doc on new document creation
           return val < this.price;
         },
-        message: "Discount price should be less than regular price!",
-      },
+        message: "Discount price should be less than regular price!"
+      }
     },
     description: {
       type: String,
-      trim: true,
+      trim: true
     },
     imageCover: {
       type: String,
-      required: [true, "A tour must have a cover image!"],
+      required: [true, "A tour must have a cover image!"]
     },
     images: [String],
     createdAt: {
       type: Date,
       default: Date.now(),
-      select: false,
+      select: false
     },
     startDates: [Date],
     draftTour: {
       type: Boolean,
-      default: false,
-    },
+      default: false
+    }
   },
   {
     toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
 

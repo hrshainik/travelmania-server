@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
@@ -46,7 +47,9 @@ const userSchema = mongoose.Schema({
       message:
         "Role can't be anything! This app has three role(user, guide, admin)."
     }
-  }
+  },
+  passResetToken: String,
+  passResetExpires: Date
 });
 
 userSchema.pre("save", async function(next) {
@@ -54,6 +57,13 @@ userSchema.pre("save", async function(next) {
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+  next();
+});
+
+userSchema.pre("save", function(next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -70,6 +80,19 @@ userSchema.methods.changedPassAfter = function(JWTTimestamp) {
     return JWTTimestamp < changedTimestamp; // jwt issued time < passwordchangedtime
   }
   return false;
+};
+
+userSchema.methods.createPassResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passResetExpires = Date.now() + 10 * 60 * 1000; // 10min
+
+  return resetToken;
 };
 
 const User = mongoose.model("User", userSchema);

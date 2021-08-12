@@ -37,7 +37,16 @@ const userSchema = mongoose.Schema({
   passwordChangedAt: {
     type: Date
   },
-  photo: String
+  photo: String,
+  role: {
+    type: String,
+    default: "user",
+    enum: {
+      values: ["user", "guide", "admin"],
+      message:
+        "Role can't be anything! This app has three role(user, guide, admin)."
+    }
+  }
 });
 
 userSchema.pre("save", async function(next) {

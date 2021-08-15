@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const handlerFactory = require("./handlerFactory");
 
 const filteredObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -11,45 +12,17 @@ const filteredObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-exports.getAllUsers = catchAsync(async (req, res) => {
-  const users = await User.find();
-
-  res.status(200).json({
-    status: "success",
-    result: users.length,
-    data: {
-      users
-    }
-  });
-});
-
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not defined! Please use /signup instead"
   });
 };
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!"
-  });
-};
-
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!"
-  });
-};
-
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!"
-  });
-};
+exports.getAllUsers = handlerFactory.getAll(User);
+exports.getUser = handlerFactory.getOne(User);
+exports.updateUser = handlerFactory.updateOne(User);
+exports.deleteUser = handlerFactory.deleteOne(User);
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // Create error if user post password data

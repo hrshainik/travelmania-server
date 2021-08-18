@@ -1,6 +1,7 @@
 const Tour = require("../models/tourModel");
 const catchAsync = require("../utils/catchAsync");
 const handlerFactory = require("./handlerFactory");
+const AppError = require("../utils/appError");
 
 exports.cheapTours = (req, res, next) => {
   req.query.limit = "5";
@@ -96,5 +97,80 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     data: {
       plan
     }
+  });
+});
+
+// /tours-within/:distance/center/:latlng/unit/:unit
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  let radius;
+  if (unit === "mi") {
+    radius = distance / 3963.2;
+  } else if (unit === "km") {
+    radius = distance / 6378.1;
+  }
+
+  if (!lat || !lng)
+    return next(
+      new AppError(
+        "Please provide a latitude and longitude in the format lat,lng",
+        400
+      )
+    );
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  });
+
+  res.status(200).json({
+    status: "success",
+    result: tours.length,
+    data: tours
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  let multiplier;
+  if (unit === "mi") {
+    multiplier = 0.000621371;
+  } else if (unit === "km") {
+    multiplier = 0.001;
+  }
+
+  if (!lat || !lng)
+    return next(
+      new AppError(
+        "Please provide a latitude and longitude in the format lat,lng",
+        400
+      )
+    );
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: [lng * 1, lat * 1]
+        },
+        distanceField: "distance",
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        name: 1,
+        distance: 1
+      }
+    }
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: distances
   });
 });
